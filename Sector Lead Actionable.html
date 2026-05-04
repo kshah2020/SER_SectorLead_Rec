@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SER Sector Lead Pilot Recommender</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #d9e1ec;
+      --accent: #1f4fd8;
+      --accent-light: #eef3ff;
+      --good: #0f766e;
+      --warn: #b45309;
+      --bad: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 20px 60px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #12295d, #1f4fd8);
+      color: white;
+      border-radius: 24px;
+      padding: 34px;
+      box-shadow: 0 18px 40px rgba(31, 79, 216, 0.18);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 820px;
+      color: rgba(255,255,255,0.86);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    }
+
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 21px;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font: inherit;
+      background: white;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(31,79,216,0.10);
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .full {
+      margin-bottom: 16px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 13px;
+      padding: 11px 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .ghost {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .output-section {
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .output-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .recommendation {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 10px;
+    }
+
+    .badge.good {
+      background: #ecfdf5;
+      color: var(--good);
+    }
+
+    .badge.warn {
+      background: #fffbeb;
+      color: var(--warn);
+    }
+
+    .badge.bad {
+      background: #fef2f2;
+      color: var(--bad);
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 8px 0 0;
+    }
+
+    li {
+      margin-bottom: 7px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px;
+    }
+
+    .metric .num {
+      font-size: 24px;
+      font-weight: 850;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .prompt-box {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 16px;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre-wrap;
+      font-size: 12.5px;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 12.5px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .row, .mini-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 27px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .hero, .input-card, .actions, .small-note {
+        display: none;
+      }
+      .grid {
+        display: block;
+      }
+      .card {
+        box-shadow: none;
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>SER Sector Lead Pilot Recommender</h1>
+      <p>
+        Enter the semester inputs below to generate an actionable recommendation for pod count,
+        Sector Lead staffing, rollout scope, risks, and next steps.
+      </p>
+    </section>
+
+    <section class="grid">
+      <div class="card input-card">
+        <h2>Semester Inputs</h2>
+        <p class="sub">Use realistic estimates. The tool is designed to keep the pilot low-burden and scalable.</p>
+
+        <div class="row">
+          <div>
+            <label for="returning">Active returning members</label>
+            <input id="returning" type="number" min="0" value="6" />
+            <div class="hint">Members who could credibly serve as Sector Leads.</div>
+          </div>
+          <div>
+            <label for="analysts">New / active analysts</label>
+            <input id="analysts" type="number" min="0" value="18" />
+            <div class="hint">Expected analysts who will need pod support.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="minPod">Minimum pod size</label>
+            <input id="minPod" type="number" min="1" value="2" />
+          </div>
+          <div>
+            <label for="maxPod">Maximum pod size</label>
+            <input id="maxPod" type="number" min="1" value="4" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="meetingSlots">Available meeting slots</label>
+            <input id="meetingSlots" type="number" min="0" value="2" />
+            <div class="hint">Slots that can absorb sector overview work.</div>
+          </div>
+          <div>
+            <label for="sectors">Target sectors</label>
+            <input id="sectors" type="number" min="1" value="4" />
+            <div class="hint">Number of sectors SER wants to cover.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="leadCapacity">Lead capacity</label>
+            <select id="leadCapacity">
+              <option value="low">Low, 10-15 min/week</option>
+              <option value="standard" selected>Standard, 15-20 min/week</option>
+              <option value="high">High, 20-30 min/week</option>
+            </select>
+          </div>
+          <div>
+            <label for="analystRisk">Expected analyst drop-off risk</label>
+            <select id="analystRisk">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="full">
+          <label for="constraints">Special constraints / context</label>
+          <textarea id="constraints" placeholder="Example: only 3 reliable upperclassmen, limited meeting time, uneven sector interest, etc."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="primary" onclick="generateRecommendation()">Generate Recommendation</button>
+          <button class="secondary" onclick="copyOutput()">Copy Summary</button>
+          <button class="ghost" onclick="window.print()">Print / Save PDF</button>
+          <button class="ghost" onclick="resetDefaults()">Reset</button>
+        </div>
+
+        <p class="small-note">
+          Note: This tool gives a structured implementation recommendation. For a more detailed memo, copy the AI prompt generated at the bottom into ChatGPT.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Recommendation Output</h2>
+        <p class="sub">Use this as the implementation recommendation for Stephen or e-board.</p>
+
+        <div id="output">
+          <div class="output-section">
+            <div class="kicker">Recommendation</div>
+            <p class="recommendation">Click “Generate Recommendation” to start.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function val(id) {
+      const el = document.getElementById(id);
+      if (el.type === "number") return Number(el.value || 0);
+      return el.value;
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function generateRecommendation() {
+      const returning = val("returning");
+      const analysts = val("analysts");
+      const minPod = Math.max(1, val("minPod"));
+      const maxPod = Math.max(minPod, val("maxPod"));
+      const meetingSlots = val("meetingSlots");
+      const sectors = Math.max(1, val("sectors"));
+      const leadCapacity = val("leadCapacity");
+      const analystRisk = val("analystRisk");
+      const constraints = val("constraints").trim();
+
+      const podsNeededRaw = Math.ceil(analysts / maxPod);
+      const podsNeededToKeepSmall = Math.ceil(analysts / Math.max(minPod, Math.round((minPod + maxPod) / 2)));
+      let recommendedPods = Math.min(returning, sectors, podsNeededRaw);
+
+      if (analysts === 0 || returning === 0) recommendedPods = 0;
+      if (recommendedPods > 4) recommendedPods = 4;
+
+      let status = "";
+      let badgeClass = "";
+      let headline = "";
+
+      if (returning === 0 || analysts === 0) {
+        status = "Do not launch yet";
+        badgeClass = "bad";
+        headline = "Hold the pilot until SER has both active analysts and reliable returning members.";
+      } else if (returning < Math.min(2, podsNeededRaw) || meetingSlots < 1) {
+        status = "Limited pilot only";
+        badgeClass = "warn";
+        headline = "Run a very small pilot, likely 1 pod, and avoid presenting this as a full structure.";
+        recommendedPods = Math.max(1, Math.min(returning, 1));
+      } else if (returning >= podsNeededRaw && meetingSlots >= 2) {
+        status = "Ready to launch";
+        badgeClass = "good";
+        headline = "SER can run a clean Sector Lead pilot with enough staffing and meeting time.";
+        recommendedPods = Math.min(4, Math.min(podsNeededRaw, sectors));
+      } else {
+        status = "Pilot with controlled scope";
+        badgeClass = "warn";
+        headline = "SER should pilot the structure, but keep it smaller than total sector demand.";
+        recommendedPods = Math.min(4, Math.max(1, Math.min(returning, sectors, podsNeededRaw)));
+      }
+
+      const avgPodSize = recommendedPods > 0 ? Math.ceil(analysts / recommendedPods) : 0;
+      const coveredAnalysts = recommendedPods > 0 ? Math.min(analysts, recommendedPods * maxPod) : 0;
+      const uncoveredAnalysts = Math.max(0, analysts - coveredAnalysts);
+
+      const meetingRecommendation = meetingSlots >= 2
+        ? "Use two designated meetings: one for guided sector research and one for finalizing the one-page overview or short pod presentation."
+        : meetingSlots === 1
+          ? "Use one meeting for a compressed sector overview work session and make the output a simple one-page template, not a presentation."
+          : "Do not add a new outside-meeting deliverable. Either create meeting time first or delay the collaborative overview.";
+
+      const leadWorkload = leadCapacity === "low"
+        ? "Keep Lead responsibilities very light: answer questions, run brief check-ins, and flag issues to e-board. Avoid requiring detailed written feedback."
+        : leadCapacity === "high"
+          ? "Leads can handle check-ins, light thesis feedback, and sector overview guidance, but should still not replace e-board review."
+          : "Use the standard model: 15-20 minutes per week, biweekly pod check-ins, early thesis direction, and escalation of struggling analysts.";
+
+      let scaleLogic = "";
+      if (recommendedPods === 0) {
+        scaleLogic = "No pod structure is recommended under the current inputs.";
+      } else if (recommendedPods < sectors) {
+        scaleLogic = `Run ${recommendedPods} stronger pod(s) instead of trying to cover all ${sectors} target sectors. Prioritize the sectors with the most analyst interest and strongest available Leads.`;
+      } else {
+        scaleLogic = `Run ${recommendedPods} pod(s), with one Sector Lead per pod. This matches the low-burden pilot structure and avoids overbuilding the role.`;
+      }
+
+      const riskItems = [];
+      if (uncoveredAnalysts > 0) riskItems.push(`${uncoveredAnalysts} analyst(s) may fall outside the recommended pod capacity. Either increase max pod size, add Leads, or reduce pilot scope.`);
+      if (avgPodSize > maxPod) riskItems.push("Average pod size is above the intended max. This could make the role feel too much like e-board work.");
+      if (meetingSlots < 2) riskItems.push("Limited meeting time makes the collaborative activity harder to complete without creating extra busywork.");
+      if (analystRisk === "high") riskItems.push("High expected drop-off means e-board should track attendance and progress checks closely after Week 2.");
+      if (returning > 0 && returning < podsNeededRaw) riskItems.push("Returning member capacity is the main bottleneck. Fewer, stronger pods are better than assigning weak or unreliable Leads.");
+      if (riskItems.length === 0) riskItems.push("No major implementation risks based on current inputs. Still reassess after the first progress check.");
+
+      const nextSteps = [
+        "Select Sector Leads based on reliability, technical strength, communication, and willingness to mentor.",
+        "Assign analysts intentionally instead of letting everyone self-sort.",
+        "Give each pod a simple sector overview template with five sections: snapshot, catalysts, key metrics, comparable names, and themes to watch.",
+        "Use the collaborative sector overview as an on-ramp to the individual report, not as an extra major deliverable.",
+        "Track success with completion rate, returning member participation, early meeting attendance, analyst confidence, and on-time progress checks."
+      ];
+
+      if (constraints) {
+        nextSteps.unshift(`Account for the stated constraint: ${constraints}`);
+      }
+
+      const aiPrompt = buildPrompt({
+        returning, analysts, minPod, maxPod, meetingSlots, sectors, leadCapacity,
+        analystRisk, constraints, recommendedPods, avgPodSize, status
+      });
+
+      const output = `
+        <div class="output-section">
+          <div class="kicker">Recommendation</div>
+          <p class="recommendation">${headline}</p>
+          <span class="badge ${badgeClass}">${status}</span>
+
+          <div class="mini-grid">
+            <div class="metric">
+              <div class="num">${recommendedPods}</div>
+              <div class="label">Recommended pods</div>
+            </div>
+            <div class="metric">
+              <div class="num">${recommendedPods}</div>
+              <div class="label">Sector Leads needed</div>
+            </div>
+            <div class="metric">
+              <div class="num">${avgPodSize}</div>
+              <div class="label">Approx. analysts per pod</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-section">
+          <div class="kicker">Implementation Logic</div>
+          <ul>
+            <li>${scaleLogic}</li>
+            <li>${meetingRecommendation}</li>
+            <li>${leadWorkload}</li>
+          </ul>
+        </div>
+
+        <div class="output-section">
+          <div class="kicker">Risks / Watchouts</div>
+          <ul>${riskItems.map(item => `<li>${item}</li>`).join("")}</ul>
+        </div>
+
+        <div class="output-section">
+          <div class="kicker">Recommended Next Steps</div>
+          <ul>${nextSteps.map(item => `<li>${item}</li>`).join("")}</ul>
+        </div>
+
+        <div class="output-section">
+          <div class="kicker">AI Prompt for More Detailed Recommendations</div>
+          <div class="prompt-box" id="promptBox">${escapeHtml(aiPrompt)}</div>
+          <div class="actions">
+            <button class="secondary" onclick="copyPrompt()">Copy AI Prompt</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("output").innerHTML = output;
+    }
+
+    function buildPrompt(data) {
+      return `You are helping SER implement a Sector Lead pilot. Use the inputs below to generate a practical, actionable implementation recommendation.
+
+Context:
+SER is considering a Sector Lead structure where experienced returning members support small pods of analysts, guide one early-semester collaborative sector overview, and act as a first layer of light feedback before e-board review. The model should stay low-burden, fit into existing meeting time, and avoid creating extra busywork.
+
+Inputs:
+- Active returning members who could serve as Sector Leads: ${data.returning}
+- New / active analysts: ${data.analysts}
+- Desired pod size range: ${data.minPod}-${data.maxPod} analysts
+- Available meeting slots for sector overview work: ${data.meetingSlots}
+- Target sectors SER wants to cover: ${data.sectors}
+- Sector Lead capacity: ${data.leadCapacity}
+- Expected analyst drop-off risk: ${data.analystRisk}
+- Special constraints: ${data.constraints || "None"}
+- Initial tool recommendation: ${data.status}
+- Recommended pods: ${data.recommendedPods}
+- Approximate analysts per pod: ${data.avgPodSize}
+
+Please produce:
+1. A clear recommendation on whether SER should launch the pilot, limit the pilot, or delay it.
+2. How many pods and Sector Leads SER should use.
+3. How analysts should be assigned.
+4. What the first 4-6 weeks should look like.
+5. Risks and mitigation steps.
+6. A simple success measurement plan.
+7. A concise final recommendation that Stephen/e-board can act on.`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(match) {
+        return ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        })[match];
+      });
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      const text = output.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Recommendation summary copied.");
+      });
+    }
+
+    function copyPrompt() {
+      const promptBox = document.getElementById("promptBox");
+      if (!promptBox) return;
+      navigator.clipboard.writeText(promptBox.innerText).then(() => {
+        alert("AI prompt copied.");
+      });
+    }
+
+    function resetDefaults() {
+      document.getElementById("returning").value = 6;
+      document.getElementById("analysts").value = 18;
+      document.getElementById("minPod").value = 2;
+      document.getElementById("maxPod").value = 4;
+      document.getElementById("meetingSlots").value = 2;
+      document.getElementById("sectors").value = 4;
+      document.getElementById("leadCapacity").value = "standard";
+      document.getElementById("analystRisk").value = "medium";
+      document.getElementById("constraints").value = "";
+      document.getElementById("output").innerHTML = `
+        <div class="output-section">
+          <div class="kicker">Recommendation</div>
+          <p class="recommendation">Click “Generate Recommendation” to start.</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
